@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Discipline</title>
+<style>
+  :root{
+    --paper: #f3ecdc;
+    --card: #fbf7ec;
+    --ink: #1e2a22;
+    --ink-soft: #6e6354;
+    --gold: #b8863c;
+    --green: #3b6e4f;
+    --slate: #55606b;
+    --night: #3a3f68;
+    --rule: #e1d3b4;
+    --danger: #a3312a;
+    --on-ink: #f3ecdc;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+  }
+  .hidden{ display:none !important; }
+
+  /* ---------- Header band ---------- */
+  .header-band{
+    background: var(--ink);
+    color: var(--on-ink);
+    padding: 22px 20px 20px;
+  }
+  .header-inner{ max-width: 640px; margin: 0 auto; }
+  .brand-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom: 18px;
+  }
+  .brand{
+    font-size: 12.5px;
+    letter-spacing: 0.03em;
+    color: rgba(243,236,220,0.62);
+  }
+  .brand-row button{
+    background:none;
+    border:1px solid rgba(243,236,220,0.4);
+    color: var(--on-ink);
+    font-size:12px;
+    padding: 6px 11px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .brand-row button:hover{ background: rgba(243,236,220,0.12); }
+  .datebar{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .datebar .weekday{
+    display:block;
+    font-size: 14px;
+    color: var(--gold);
+    font-style: italic;
+    margin-bottom: 3px;
+  }
+  .datebar h1{
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-weight: 400;
+    font-size: 30px;
+    margin: 0;
+    line-height: 1.15;
+  }
+  .nav{ display:flex; gap: 8px; align-items:center; }
+  .nav button{
+    background: none;
+    border: 1px solid rgba(243,236,220,0.4);
+    color: var(--on-ink);
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .nav button:hover{ background: rgba(243,236,220,0.12); }
+  .nav .today{ width: auto; padding: 0 12px; font-size: 12.5px; }
+
+  /* ---------- Body ---------- */
+  .wrap{ max-width: 640px; margin: 0 auto; padding: 24px 20px 70px; }
+
+  .progress-row{ display:flex; align-items:center; gap: 12px; margin-bottom: 22px; }
+  .progress-track{ flex:1; height: 7px; background: var(--rule); border-radius: 4px; overflow:hidden; }
+  .progress-fill{ height:100%; background: var(--green); width:0%; transition: width 0.3s ease; }
+  .progress-label{ font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; }
+
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .legend span{ display:inline-flex; align-items:center; gap: 5px; }
+  .legend i{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .list{ }
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap: 14px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .item:last-child{ border-bottom: none; }
+  .bar{
+    width: 4px;
+    align-self: stretch;
+    border-radius: 2px;
+    flex-shrink: 0;
+    min-height: 30px;
+  }
+  .body{ flex: 1 1 auto; min-width: 0; }
+  .time{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+  }
+  .label{
+    font-size: 16px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .item.done .label{
+    color: var(--ink-soft);
+    text-decoration: line-through;
+    text-decoration-color: var(--rule);
+  }
+  .item.done .time{ color: var(--rule); }
+
+  .check{
+    appearance: none; -webkit-appearance:none;
+    width: 22px; height: 22px; min-width: 22px;
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    margin-top: 2px;
+    cursor: pointer;
+    position: relative;
+    background: var(--card);
+    flex-shrink: 0;
+  }
+  .check:checked{ background: var(--green); border-color: var(--green); }
+  .check:checked::after{
+    content:"";
+    position:absolute;
+    left: 7px; top: 3px;
+    width: 5px; height: 10px;
+    border: solid var(--card);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .foot{ margin-top: 30px; font-size: 12px; color: var(--ink-soft); text-align:center; }
+  .center-msg{ text-align:center; color: var(--ink-soft); padding: 70px 20px; font-style:italic; font-size: 15px; }
+  .center-msg .err{ display:block; font-style:normal; font-size: 12px; color: var(--danger); margin-top:8px; }
+
+  /* ---------- Auth screen ---------- */
+  .auth-box{
+    max-width: 360px;
+    margin: 50px auto 0;
+    text-align:center;
+  }
+  .auth-box h1{
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-weight:400;
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+  .auth-box p.sub{ color: var(--ink-soft); font-size: 14px; margin-bottom: 24px; }
+  .auth-box input{
+    width:100%;
+    padding: 11px 12px;
+    margin-bottom: 12px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--card);
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .auth-box button.primary{
+    width:100%;
+    padding: 12px;
+    background: var(--ink);
+    color: var(--paper);
+    border:none;
+    border-radius: 5px;
+    font-size: 15px;
+    cursor:pointer;
+    margin-top: 4px;
+  }
+  .auth-box .switch{ margin-top: 16px; font-size: 13px; color: var(--ink-soft); }
+  .auth-box .switch a{ color: var(--gold); cursor:pointer; text-decoration: underline; }
+  .auth-error{ color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+  @media (max-width: 420px){
+    .datebar h1{ font-size: 25px; }
+    .label{ font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header-band">
+  <div class="header-inner">
+    <div class="brand-row">
+      <span class="brand">Dare to Defy the Norms — Daily Discipline</span>
+      <button id="logoutBtn" class="hidden">Log out</button>
+    </div>
+
+    <!-- shown only when logged in -->
+    <div id="datebarWrap" class="hidden">
+      <div class="datebar">
+        <div>
+          <span class="weekday" id="weekday"></span>
+          <h1 id="datelabel"></h1>
+        </div>
+        <div class="nav">
+          <button id="prev" title="Previous day">‹</button>
+          <button class="today" id="today">Today</button>
+          <button id="next" title="Next day">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="auth-box">
+    <h1 id="authTitle">Welcome back</h1>
+    <p class="sub" id="authSub">Sign in to sync your discipline across every device.</p>
+    <input type="email" id="authEmail" placeholder="Email" autocomplete="username">
+    <input type="password" id="authPassword" placeholder="Password" autocomplete="current-password">
+    <button class="primary" id="authSubmit">Sign in</button>
+    <div class="auth-error" id="authError"></div>
+    <div class="switch" id="authSwitch">New here? <a id="authToggle">Create an account</a></div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div id="progressRow" class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">0 of 0 done</div>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:var(--gold)"></i>Spiritual</span>
+      <span><i style="background:var(--ink)"></i>Work</span>
+      <span><i style="background:var(--green)"></i>Growth</span>
+      <span><i style="background:var(--slate)"></i>Personal</span>
+      <span><i style="background:var(--night)"></i>Sleep</span>
+    </div>
+
+    <div id="content"></div>
+    <div class="foot">Saturdays and Sundays are off the table — nothing scheduled.</div>
+  </div>
+
+</div>
+
+<!-- Firebase SDKs (compat build — simplest for a single static file) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================
+   1. FIREBASE CONFIG
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCfNapqMBcXhWoUGpBq_Ct73G3EjYTzuY0",
+  authDomain: "locked-in-structures.firebaseapp.com",
+  projectId: "locked-in-structures",
+  storageBucket: "locked-in-structures.firebasestorage.app",
+  messagingSenderId: "491706247054",
+  appId: "1:491706247054:web:4c49640eea0538ae9466df"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* =========================================================
+   2. SCHEDULE — time, label, category
+   categories: spiritual | work | growth | personal
+   ========================================================= */
+const SCHEDULE = [
+  { time: "12:00–2:00 AM", label: "Prayer", cat: "spiritual" },
+  { time: "2:00–5:00 AM", label: "Sleep", cat: "sleep" },
+  { time: "5:00–6:00 AM", label: "Word / Bible study", cat: "spiritual" },
+  { time: "6:00–7:00 AM", label: "Workout", cat: "personal" },
+  { time: "7:00–7:30 AM", label: "Refresh / rest break", cat: "personal" },
+  { time: "7:30–8:00 AM", label: "WhatsApp status — morning post", cat: "work" },
+  { time: "8:00–11:00 AM", label: "Client work + offer structuring", cat: "work" },
+  { time: "11:00 AM–12:00 PM", label: "Learning block", cat: "growth" },
+  { time: "12:00–1:00 PM", label: "Client work + offer structuring (round 2)", cat: "work" },
+  { time: "1:00–2:00 PM", label: "Cross-post content", cat: "work" },
+  { time: "2:00–2:30 PM", label: "WhatsApp status — evening post", cat: "work" },
+  { time: "2:30–3:00 PM", label: "Organizing systems", cat: "work" },
+  { time: "3:00–5:00 PM", label: "Movie time", cat: "personal" },
+  { time: "5:00–6:00 PM", label: "Cooking", cat: "personal" },
+  { time: "6:00–6:30 PM", label: "Free time", cat: "personal" },
+  { time: "8:00 PM", label: "Sleep begins", cat: "sleep" },
+];
+
+const CAT_COLOR = {
+  spiritual: "var(--gold)",
+  work: "var(--ink)",
+  growth: "var(--green)",
+  personal: "var(--slate)",
+  sleep: "var(--night)",
+};
+
+const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const LEARNING_POOLS = {
+  financial: [
+    "Financial: Alex Hormozi — \u201c$100M Offers\u201d / \u201c$100M Leads\u201d",
+    "Financial: Dan Koe — audience & content-business building",
+    "Financial: Russell Brunson — funnels & offer stacking",
+  ],
+  faithValue: [
+    "Faith & Value Creation: Joshua Selman (Koinonia)",
+    "Faith & Value Creation: Lawrence Oyor",
+    "Faith & Value Creation: Myles Munroe — kingdom & purpose principles",
+    "Faith & Value Creation: Sam Adeyemi — leadership & kingdom business",
+  ],
+  mental: [
+    "Mental: James Clear — Atomic Habits",
+    "Mental: Cal Newport — Deep Work",
+    "Mental: Andrew Huberman — focus & mental performance",
+  ],
+  discipline: [
+    "Discipline & Personal Development: David Goggins",
+    "Discipline & Personal Development: Jocko Willink — Extreme Ownership",
+    "Discipline & Personal Development: Eric Thomas",
+  ],
+};
+
+const WEEKDAY_SLOT = {
+  1: { pool: "financial", offset: 0 },
+  2: { pool: "faithValue", offset: 0 },
+  3: { pool: "mental", offset: 0 },
+  4: { pool: "discipline", offset: 0 },
+  5: { pool: "financial", offset: 1 },
+};
+
+function getWeekIndex(date){
+  const start = new Date(date.getFullYear(), 0, 1);
+  const diffDays = Math.floor((date - start) / 86400000);
+  return Math.floor(diffDays / 7);
+}
+
+function learningLabelForDate(date){
+  const weekday = date.getDay();
+  const slot = WEEKDAY_SLOT[weekday];
+  if(!slot) return "Learning block";
+  const pool = LEARNING_POOLS[slot.pool];
+  const weekIndex = getWeekIndex(date);
+  const pick = pool[(weekIndex + slot.offset) % pool.length];
+  return `Learning block — ${pick}`;
+}
+
+function scheduleForDate(date){
+  const day = Math.min(date.getDate(), 31);
+  return SCHEDULE.map((item, i) => {
+    if(i === 2) return { ...item, label: `Word / Bible study — Proverbs ${day}` };
+    if(i === 7) return { ...item, label: learningLabelForDate(date) };
+    return item;
+  });
+}
+
+function toKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function isWeekend(d){ const wd = d.getDay(); return wd === 0 || wd === 6; }
+function addDays(d, n){ const c = new Date(d); c.setDate(c.getDate()+n); return c; }
+
+let current = new Date();
+let currentUser = null;
+
+/* =========================================================
+   3. AUTH
+   ========================================================= */
+let mode = "signin";
+
+document.getElementById("authToggle").addEventListener("click", () => {
+  mode = mode === "signin" ? "signup" : "signin";
+  document.getElementById("authTitle").textContent = mode === "signin" ? "Welcome back" : "Create your account";
+  document.getElementById("authSubmit").textContent = mode === "signin" ? "Sign in" : "Create account";
+  document.getElementById("authSwitch").innerHTML = mode === "signin"
+    ? 'New here? <a id="authToggle2">Create an account</a>'
+    : 'Already have an account? <a id="authToggle2">Sign in</a>';
+  document.getElementById("authToggle2").addEventListener("click", () => document.getElementById("authToggle").click());
+  document.getElementById("authError").textContent = "";
+});
+
+document.getElementById("authSubmit").addEventListener("click", async () => {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const errEl = document.getElementById("authError");
+  errEl.textContent = "";
+  if(!email || !password){ errEl.textContent = "Enter both email and password."; return; }
+  try{
+    if(mode === "signin"){
+      await auth.signInWithEmailAndPassword(email, password);
+    } else {
+      await auth.createUserWithEmailAndPassword(email, password);
+    }
+  } catch(e){
+    errEl.textContent = e.message.replace("Firebase: ", "");
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  const authScreen = document.getElementById("authScreen");
+  const app = document.getElementById("app");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const datebarWrap = document.getElementById("datebarWrap");
+  if(user){
+    authScreen.classList.add("hidden");
+    app.classList.remove("hidden");
+    logoutBtn.classList.remove("hidden");
+    datebarWrap.classList.remove("hidden");
+    render();
+  } else {
+    authScreen.classList.remove("hidden");
+    app.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+    datebarWrap.classList.add("hidden");
+  }
+});
+
+/* =========================================================
+   4. FIRESTORE
+   ========================================================= */
+async function loadState(dateKey){
+  const ref = db.collection("users").doc(currentUser.uid).collection("days").doc(dateKey);
+  const snap = await ref.get();
+  return snap.exists ? (snap.data().items || {}) : {};
+}
+async function loadStateSafe(dateKey){
+  try{
+    return await loadState(dateKey);
+  } catch(e){
+    document.getElementById("content").innerHTML =
+      `<div class="center-msg">Couldn't load this day.<span class="err">${e.message}</span></div>`;
+    throw e;
+  }
+}
+async function saveState(dateKey, state){
+  const ref = db.collection("users").doc(currentUser.uid).collection("days").doc(dateKey);
+  await ref.set({ items: state }, { merge: true });
+}
+
+/* =========================================================
+   5. RENDER
+   ========================================================= */
+async function render(){
+  if(!currentUser) return;
+  const key = toKey(current);
+  document.getElementById("weekday").textContent = DAY_NAMES[current.getDay()];
+  document.getElementById("datelabel").textContent =
+    `${MONTH_NAMES[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}`;
+
+  const content = document.getElementById("content");
+  const progressRow = document.getElementById("progressRow");
+
+  if(isWeekend(current)){
+    progressRow.classList.add("hidden");
+    content.innerHTML = `<div class="center-msg">Nothing scheduled — this day is yours.</div>`;
+    return;
+  }
+  progressRow.classList.remove("hidden");
+  content.innerHTML = '<div class="center-msg">Loading…</div>';
+
+  let state;
+  try{
+    state = await loadStateSafe(key);
+  } catch(e){
+    return;
+  }
+  content.innerHTML = "";
+
+  const daySchedule = scheduleForDate(current);
+  const list = document.createElement("div");
+  list.className = "list";
+
+  daySchedule.forEach((item, i) => {
+    const isDone = !!state[i];
+
+    const row = document.createElement("div");
+    row.className = "item" + (isDone ? " done" : "");
+
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.background = CAT_COLOR[item.cat] || "var(--rule)";
+
+    const body = document.createElement("div");
+    body.className = "body";
+    const time = document.createElement("div");
+    time.className = "time";
+    time.textContent = item.time;
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent = item.label;
+    body.appendChild(time);
+    body.appendChild(label);
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.className = "check";
+    check.checked = isDone;
+    check.addEventListener("change", async () => {
+      state[i] = check.checked;
+      row.classList.toggle("done", check.checked);
+      await saveState(key, state);
+      updateProgress(state);
+    });
+
+    row.appendChild(bar);
+    row.appendChild(body);
+    row.appendChild(check);
+    list.appendChild(row);
+  });
+
+  content.appendChild(list);
+  updateProgress(state);
+}
+
+function updateProgress(state){
+  const total = SCHEDULE.length;
+  const done = SCHEDULE.reduce((acc,_,i) => acc + (state[i] ? 1 : 0), 0);
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = `${done} of ${total} done`;
+}
+
+document.getElementById("prev").addEventListener("click", () => { current = addDays(current, -1); render(); });
+document.getElementById("next").addEventListener("click", () => { current = addDays(current, 1); render(); });
+document.getElementById("today").addEventListener("click", () => { current = new Date(); render(); });
+</script>
+</body>
+</html>
